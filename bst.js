@@ -148,6 +148,8 @@ const tree = function (arr) {
     prettyPrint,
     insert,
     remove,
+    deleteNode,
+    inOrderSuccessor,
   };
 };
 
