@@ -143,6 +143,31 @@ const tree = function (arr) {
     return currentNode;
   }
 
+// find
+// accepts a value and returns the node w/ given value
+// start at root node. if no root node, search is over. 
+// check if value of new node is the value we are looking for, 
+// if not, is the value greater or less than the value of the root to confirm direction to go
+// if greater, check if node to the right, if not, search over. 
+// if yes, move to that node, and repeat. 
+// if its less, cehck if node to left, if not search over. 
+// if yes, move to that node, and repeat. 
+function find(nodeData, currentNode = root ) {
+while(currentNode !== null) {
+  if(nodeData === currentNode.nodeData){
+    return currentNode
+  } else if (nodeData < currentNode.nodeData) {
+    currentNode = currentNode.leftChild
+  } else {
+    currentNode = currentNode.rightChild
+  }
+}
+return undefined // node w/ given data not found
+}
+
+
+
+
   return {
     buildTree,
     prettyPrint,
@@ -150,6 +175,7 @@ const tree = function (arr) {
     remove,
     deleteNode,
     inOrderSuccessor,
+    find,
   };
 };
 
@@ -163,3 +189,4 @@ treeRoot.insert(6);
 // treeRoot.prettyPrint();
 treeRoot.remove(100);
 treeRoot.prettyPrint();
+// console.log(treeRoot.find(200))
