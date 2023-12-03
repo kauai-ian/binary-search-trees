@@ -217,18 +217,36 @@ const tree = function (arr) {
   // write root -> data
   // inorder(root -> right)
   // end loop
-  function inOrder(callback, currentNode = root, result = []) {
+  function inOrderRec(callback, currentNode = root, result = []) {
     if (currentNode === null) return;
 
-    inOrder(callback, currentNode.leftChild, result);
+    inOrderRec(callback, currentNode.leftChild, result);
     if (callback) {
       callback(currentNode.nodeData);
     } else {
       result.push(currentNode.nodeData);
     }
-    inOrder(callback, currentNode.rightChild, result);
+    inOrderRec(callback, currentNode.rightChild, result);
 
     if (result.length > 0) return result; // if the array isnt empty, return array
+  }
+
+  function inOrderIt(callback, currentNode = root, result = []) {
+    const stack = [];
+    while (currentNode || stack.length > 0) {
+      while (currentNode !== null) {
+        stack.push(currentNode); // traverse left and push all nodes encountered onto stack
+        currentNode = currentNode.leftChild;
+      }
+      currentNode = stack.pop(); // pop and process using callback or push to result
+      if (callback) {
+        callback(currentNode.nodeData);
+      } else {
+        result.push(currentNode.nodeData);
+      }
+      currentNode = currentNode.rightChild; // traverse right
+    }
+    return result;
   }
 
   // preOrder
@@ -237,7 +255,7 @@ const tree = function (arr) {
   // write root -> data
   // preorder(root -> left)
   // preorder(root -> right)
-  function preOrder(callback, currentNode = root, result = []) {
+  function preOrderRec(callback, currentNode = root, result = []) {
     if (currentNode === null) return;
 
     if (callback) {
@@ -245,10 +263,28 @@ const tree = function (arr) {
     } else {
       result.push(currentNode.nodeData);
     }
-    preOrder(callback, currentNode.leftChild, result);
-    preOrder(callback, currentNode.rightChild, result);
+    preOrderRec(callback, currentNode.leftChild, result);
+    preOrderRec(callback, currentNode.rightChild, result);
 
     if (result.length > 0) return result;
+  }
+
+  function preOrderIt(callback, currentNode = root, result = []) {
+    const stack = [];
+    while (currentNode || stack.length > 0) {
+      if (currentNode !== null) {
+        if (callback) {
+          callback(currentNode.nodeData);
+        } else {
+          result.push(currentNode.nodeData);
+        }
+        stack.push(currentNode.rightChild); // right child first, then left (last in first out LIFO)
+        currentNode = currentNode.leftChild;
+      } else {
+        currentNode = stack.pop(); // move to right
+      }
+    }
+    return result;
   }
 
   // postOrder
@@ -257,6 +293,45 @@ const tree = function (arr) {
   // preorder(root -> left)
   // preorder(root -> right)
   // write root -> data
+  function postOrderRec(callback, currentNode = root, result = []) {
+    if (currentNode === null) return;
+
+    postOrderRec(callback, currentNode.leftChild, result);
+    postOrderRec(callback, currentNode.rightChild, result);
+    if (callback) {
+      callback(currentNode.nodeData);
+    } else {
+      result.push(currentNode.nodeData);
+    }
+    if (result.length > 0) return result;
+  }
+
+  function postOrderIt(callback, currentNode = root, result = []) {
+    const stack = [];
+    let prev = null; // tracks last visited node
+
+    while (currentNode || stack.length > 0) {
+      if (currentNode !== null) {
+        stack.push(currentNode); // push to stack and set left child to new current node. 
+        currentNode = currentNode.leftChild; 
+      } else {
+        let peekNode = stack[stack.length - 1];
+        if (peekNode.rightChild && prev !== peekNode.rightChild) { // if right child hasnt been visited yet, pop then process. 
+          currentNode = peekNode.rightChild;
+        } else {
+          currentNode = stack.pop();
+          if (callback) {
+            callback(currentNode.nodeData);
+          } else {
+            result.push(currentNode.nodeData);
+          }
+          prev = currentNode
+          currentNode = null // reset after processing
+        }
+      }
+    }
+    return result;
+  }
 
   return {
     buildTree,
@@ -268,8 +343,12 @@ const tree = function (arr) {
     find,
     findRec,
     levelOrder,
-    inOrder,
-    preOrder,
+    inOrderRec,
+    inOrderIt,
+    preOrderRec,
+    preOrderIt,
+    postOrderRec,
+    postOrderIt,
   };
 };
 
@@ -290,6 +369,9 @@ function logNodeValue(nodeData) {
   console.log(nodeData);
 }
 console.log(`Level order: ${treeRoot.levelOrder()}`);
-console.log(`In order: ${treeRoot.inOrder()}`);
-console.log(`Pre order: ${treeRoot.preOrder()}`);
-// console.log(`Post order: ${treeRoot.postOrder()}`)
+console.log(`In order recursion: ${treeRoot.inOrderRec()}`);
+console.log(`In order iterative: ${treeRoot.inOrderIt()}`);
+console.log(`Pre order recursion: ${treeRoot.preOrderRec()}`);
+console.log(`Pre order iterative: ${treeRoot.preOrderIt()}`);
+console.log(`Post order recursion: ${treeRoot.postOrderRec()}`);
+console.log(`Post order recursion: ${treeRoot.postOrderIt()}`);
