@@ -210,6 +210,26 @@ const tree = function (arr) {
     return result;
   }
 
+  function levelOrderRec(callback, arr = [root], result = []) {
+    if (arr.length === 0) return result;
+    const nextArr = []; // store nodes to be processed
+    for (const node of arr) {
+      // process nodes in current level
+      if (callback) {
+        callback(node.nodeData);
+      } else {
+        result.push(node.nodeData);
+      }
+      if (node.leftChild) {
+        nextArr.push(node.leftChild);
+      }
+      if (node.rightChild) {
+        nextArr.push(node.rightChild);
+      }
+    }
+    return levelOrderRec(callback, nextArr, result);
+  }
+
   // inOrder
   // left tree first, then root node, then right tree
   // follow steps until root !==null.
@@ -312,11 +332,12 @@ const tree = function (arr) {
 
     while (currentNode || stack.length > 0) {
       if (currentNode !== null) {
-        stack.push(currentNode); // push to stack and set left child to new current node. 
-        currentNode = currentNode.leftChild; 
+        stack.push(currentNode); // push to stack and set left child to new current node.
+        currentNode = currentNode.leftChild;
       } else {
         let peekNode = stack[stack.length - 1];
-        if (peekNode.rightChild && prev !== peekNode.rightChild) { // if right child hasnt been visited yet, pop then process. 
+        if (peekNode.rightChild && prev !== peekNode.rightChild) {
+          // if right child hasnt been visited yet, pop then process.
           currentNode = peekNode.rightChild;
         } else {
           currentNode = stack.pop();
@@ -325,13 +346,65 @@ const tree = function (arr) {
           } else {
             result.push(currentNode.nodeData);
           }
-          prev = currentNode
-          currentNode = null // reset after processing
+          prev = currentNode;
+          currentNode = null; // reset after processing
         }
       }
     }
     return result;
   }
+
+  // height
+  // the distance from root to leaf nodes
+  // start on the left and recur
+  // go right and recur
+  // returns largest of the subtrees
+  function heightRec(currentNode = root) {
+    if (currentNode === null) return 0;
+
+    const leftHeight = heightRec(currentNode.leftChild);
+    const rightHeight = heightRec(currentNode.rightChild);
+    // console.log(rightHeight)
+
+    if (leftHeight > rightHeight) {
+      return leftHeight + 1; // adding 1 represents the current node
+    } else {
+      return rightHeight + 1;
+    }
+  }
+
+  function getHeight(currentNode){ // calc the heigh by recursively computing the height of left and right
+    if(currentNode === null) return 0
+    return Math.max(getHeight(currentNode.leftChild), getHeight(currentNode.rightChild))
+  }
+
+  // depth
+  // the number of edges in the path from a given node to the trees root node
+  // check to see if the value equals current value, if so return the edges count
+  // cehck if left tree value is greater than current value, if so recur and add 1 to edges each time
+  // repeat on right subtree
+  function depthRec(value, currentNode = root, edges = 0) {
+    if (currentNode === null) return -1; // if value not found return -1
+    if (currentNode.nodeData === value) return edges;
+    if (currentNode.nodeData > value) {
+      return depthRec(value, currentNode.leftChild, edges + 1);
+    } else {
+      return depthRec(value, currentNode.rightChild, edges + 1);
+    }
+  }
+
+  // is balanced?
+  function isBalanced(currentNode = root) {
+if (currentNode === null) return true
+const leftHeight = getHeight(currentNode.leftChild)
+const rightHeight = getHeight(currentNode.rightChild)
+console.log(`${leftHeight} - ${rightHeight}`)
+  if((leftHeight - rightHeight) <= 1 && isBalanced(currentNode.leftChild) && isBalanced(currentNode.rightChild)){
+    return true
+  }
+return false
+}
+  
 
   return {
     buildTree,
@@ -343,12 +416,16 @@ const tree = function (arr) {
     find,
     findRec,
     levelOrder,
+    levelOrderRec,
     inOrderRec,
     inOrderIt,
     preOrderRec,
     preOrderIt,
     postOrderRec,
     postOrderIt,
+    heightRec,
+    depthRec,
+    isBalanced,
   };
 };
 
@@ -368,10 +445,19 @@ console.log(treeRoot.findRec(400));
 function logNodeValue(nodeData) {
   console.log(nodeData);
 }
-console.log(`Level order: ${treeRoot.levelOrder()}`);
+console.log(`Level order iterative: ${treeRoot.levelOrder()}`);
+console.log(`Level order recursion: ${treeRoot.levelOrderRec()}`);
+
 console.log(`In order recursion: ${treeRoot.inOrderRec()}`);
 console.log(`In order iterative: ${treeRoot.inOrderIt()}`);
+
 console.log(`Pre order recursion: ${treeRoot.preOrderRec()}`);
 console.log(`Pre order iterative: ${treeRoot.preOrderIt()}`);
+
 console.log(`Post order recursion: ${treeRoot.postOrderRec()}`);
-console.log(`Post order recursion: ${treeRoot.postOrderIt()}`);
+console.log(`Post order iterative: ${treeRoot.postOrderIt()}`);
+
+console.log(`Height: ${treeRoot.heightRec()}`);
+console.log(`Depth of 200: ${treeRoot.depthRec(200)}`);
+
+console.log(treeRoot.isBalanced())
