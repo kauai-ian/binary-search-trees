@@ -77,13 +77,13 @@ const tree = function (arr) {
   //check the value to be inserted with the value of the current node we are in.
   // if x is less than value move to the left subtree (recur) otherwise, move to the right subtree (recur)
   //once the leaf node is reached, insert x to its right or left based on the relation between x and the leaf nodes value
-  function insert(nodeData, currentNode = root) {
-    if (currentNode === null) return node(nodeData); // if root is empty, a new root is created
-    if (currentNode === nodeData) return; // if the number is the same as whats being inserted, then return
-    if (nodeData < currentNode.nodeData) {
-      currentNode.leftChild = insert(nodeData, currentNode.leftChild); // if current node is greater than the value to be inserted, go left, and recursively call
-    } else if (nodeData > currentNode.nodeData) {
-      currentNode.rightChild = insert(nodeData, currentNode.rightChild);
+  function insert(value, currentNode = root) {
+    if (currentNode === null) return node(value); // if root is empty, a new root is created
+    if (currentNode === value) return; // if the number is the same as whats being inserted, then return
+    if (value < currentNode.nodeData) {
+      currentNode.leftChild = insert(value, currentNode.leftChild); // if current node is greater than the value to be inserted, go left, and recursively call
+    } else if (value > currentNode.nodeData) {
+      currentNode.rightChild = insert(value, currentNode.rightChild);
     }
     return currentNode;
   }
@@ -94,15 +94,17 @@ const tree = function (arr) {
   // if x is equal to the value of the current node, then remove node (seperate operation).
   // if x is less than value, move left. Otherwise move right. (recur recur)
   // once the leaf node is reached, remove the node.
-  function remove(nodeData, currentNode = root) {
-    if (currentNode === null) return currentNode;
-    if (currentNode.nodeData === nodeData) {
+  function remove(value, currentNode = root) {
+    if (currentNode === null) return currentNode; // basecase
+    if (currentNode.nodeData === value) {
+      // value matches
       currentNode = deleteNode(currentNode);
     }
-    if (currentNode.nodeData > nodeData) {
-      currentNode.leftChild = remove(nodeData, currentNode.leftChild);
+    if (currentNode.nodeData > value) {
+      // traverse down tree
+      currentNode.leftChild = remove(value, currentNode.leftChild);
     } else {
-      currentNode.rightChild = remove(nodeData, currentNode.rightChild);
+      currentNode.rightChild = remove(value, currentNode.rightChild);
     }
     return currentNode;
   }
@@ -119,12 +121,13 @@ const tree = function (arr) {
   // return the replacement node to adjust the tree structure
   function deleteNode(node) {
     if (node.leftChild !== null && node.rightChild !== null) {
+      // 2 children
       const successorNode = inOrderSuccessor(node.rightChild);
       node.nodeData = successorNode.nodeData;
       node.rightChild = remove(successorNode.nodeData, node.rightChild);
       return node;
     } else {
-      const replacementNode = node.rightChild || node.leftChild;
+      const replacementNode = node.rightChild || node.leftChild; // 1 child
       node = null;
       return replacementNode;
     }
@@ -143,30 +146,117 @@ const tree = function (arr) {
     return currentNode;
   }
 
-// find
-// accepts a value and returns the node w/ given value
-// start at root node. if no root node, search is over. 
-// check if value of new node is the value we are looking for, 
-// if not, is the value greater or less than the value of the root to confirm direction to go
-// if greater, check if node to the right, if not, search over. 
-// if yes, move to that node, and repeat. 
-// if its less, cehck if node to left, if not search over. 
-// if yes, move to that node, and repeat. 
-function find(nodeData, currentNode = root ) {
-while(currentNode !== null) {
-  if(nodeData === currentNode.nodeData){
-    return currentNode
-  } else if (nodeData < currentNode.nodeData) {
-    currentNode = currentNode.leftChild
-  } else {
-    currentNode = currentNode.rightChild
+  // find
+  // accepts a value and returns the node w/ given value
+  // start at root node. if no root node, search is over.
+  // check if value of new node is the value we are looking for,
+  // if not, is the value greater or less than the value of the root to confirm direction to go
+  // if greater, check if node to the right, if not, search over.
+  // if yes, move to that node, and repeat.
+  // if its less, cehck if node to left, if not search over.
+  // if yes, move to that node, and repeat.
+  function find(value, currentNode = root) {
+    while (currentNode !== null) {
+      if (value === currentNode.nodeData) {
+        return currentNode;
+      } else if (value < currentNode.nodeData) {
+        currentNode = currentNode.leftChild;
+      } else {
+        currentNode = currentNode.rightChild;
+      }
+    }
+    return undefined; // node w/ given data not found
   }
-}
-return undefined // node w/ given data not found
-}
 
+  function findRec(value, currentNode = root) {
+    if (currentNode === null || value === currentNode.nodeData) {
+      return currentNode;
+    } else if (value < currentNode.nodeData) {
+      // console.log(currentNode);
+      return findRec(value, currentNode.leftChild);
+    } else {
+      // console.log(currentNode);
+      return findRec(value, currentNode.rightChild);
+    }
+  }
 
+  // levelOrder (breadth first search, visits children before grandchildren)
+  // accepts a random callback function as its parameter. Traverse in breadth first level order, providing each node as an argument ot the callback.
+  // As a result the callback will perform an operation on each node following the order in which they are traversed. Level Order may be implemented using either iteration or recursion. The method should return an array of values if no callback is given as an argument.
+  // use array as a queue to keep track of all child nodes to traverse and to add new ones to the list.
+  // start w/ root node. Enqueue it. Then iteratively dequeue nodes, performing a callback operation or adding the node value to the result array.
+  // for each dequeued node, it checks left and right children, enque children if they exist.
+  // if no callback function, then return array result
+  function levelOrder(callback) {
+    const queue = [root]; // start w/ root
+    const result = []; // new list to be added to
 
+    while (queue.length > 0) {
+      // console.log(result, "added to result");
+      const currentNode = queue.shift(); // dequeue the node (removes first node and returns removed node)
+      if (callback) {
+        callback(currentNode.nodeData);
+      } else {
+        result.push(currentNode.nodeData);
+      }
+      //enqueue children
+      if (currentNode.leftChild) {
+        queue.push(currentNode.leftChild);
+      }
+      if (currentNode.rightChild) {
+        queue.push(currentNode.rightChild);
+      }
+    }
+    return result;
+  }
+
+  // inOrder
+  // left tree first, then root node, then right tree
+  // follow steps until root !==null.
+  // inorder(root -> left)
+  // write root -> data
+  // inorder(root -> right)
+  // end loop
+  function inOrder(callback, currentNode = root, result = []) {
+    if (currentNode === null) return;
+
+    inOrder(callback, currentNode.leftChild, result);
+    if (callback) {
+      callback(currentNode.nodeData);
+    } else {
+      result.push(currentNode.nodeData);
+    }
+    inOrder(callback, currentNode.rightChild, result);
+
+    if (result.length > 0) return result; // if the array isnt empty, return array
+  }
+
+  // preOrder
+  // root, left, right. (each nodes value is processed before visiting its children)
+  // follow steps until root !== null.
+  // write root -> data
+  // preorder(root -> left)
+  // preorder(root -> right)
+  function preOrder(callback, currentNode = root, result = []) {
+    if (currentNode === null) return;
+
+    if (callback) {
+      callback(currentNode.nodeData);
+    } else {
+      result.push(currentNode.nodeData);
+    }
+    preOrder(callback, currentNode.leftChild, result);
+    preOrder(callback, currentNode.rightChild, result);
+
+    if (result.length > 0) return result;
+  }
+
+  // postOrder
+  // left, right, root. (each nodes value is processed before visiting its children)
+  // follow steps until root !== null.
+  // preorder(root -> left)
+  // preorder(root -> right)
+  // write root -> data
 
   return {
     buildTree,
@@ -176,6 +266,10 @@ return undefined // node w/ given data not found
     deleteNode,
     inOrderSuccessor,
     find,
+    findRec,
+    levelOrder,
+    inOrder,
+    preOrder,
   };
 };
 
@@ -190,3 +284,12 @@ treeRoot.insert(6);
 treeRoot.remove(100);
 treeRoot.prettyPrint();
 // console.log(treeRoot.find(200))
+console.log(treeRoot.findRec(400));
+
+function logNodeValue(nodeData) {
+  console.log(nodeData);
+}
+console.log(`Level order: ${treeRoot.levelOrder()}`);
+console.log(`In order: ${treeRoot.inOrder()}`);
+console.log(`Pre order: ${treeRoot.preOrder()}`);
+// console.log(`Post order: ${treeRoot.postOrder()}`)
