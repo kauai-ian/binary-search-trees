@@ -1,4 +1,4 @@
-let testArr = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324];
+// let testArr = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324];
 
 // merge and sort function for array
 function helper(left, right) {
@@ -373,9 +373,13 @@ const tree = function (arr) {
     }
   }
 
-  function getHeight(currentNode){ // calc the heigh by recursively computing the height of left and right
-    if(currentNode === null) return 0
-    return Math.max(getHeight(currentNode.leftChild), getHeight(currentNode.rightChild))
+  function getHeight(currentNode) {
+    // calc the heigh by recursively computing the height of left and right
+    if (currentNode === null) return 0;
+    return Math.max(
+      getHeight(currentNode.leftChild),
+      getHeight(currentNode.rightChild)
+    ) +1;
   }
 
   // depth
@@ -395,16 +399,28 @@ const tree = function (arr) {
 
   // is balanced?
   function isBalanced(currentNode = root) {
-if (currentNode === null) return true
-const leftHeight = getHeight(currentNode.leftChild)
-const rightHeight = getHeight(currentNode.rightChild)
-console.log(`${leftHeight} - ${rightHeight}`)
-  if((leftHeight - rightHeight) <= 1 && isBalanced(currentNode.leftChild) && isBalanced(currentNode.rightChild)){
-    return true
+    if (currentNode === null) return true;
+    const leftHeight = getHeight(currentNode.leftChild);
+    const rightHeight = getHeight(currentNode.rightChild);
+    // console.log(`left minus right = ${leftHeight - rightHeight}`);
+    if (
+      Math.abs(leftHeight - rightHeight) <= 1 &&
+      isBalanced(currentNode.leftChild) &&
+      isBalanced(currentNode.rightChild)
+    ) {
+      // allowed values are 1, -1 and 0
+      return true;
+    }
+    return false;
   }
-return false
+
+  // rebalance
+  // traverse inorder method provides new array to the build tree function. 
+function rebalance(){
+  const inOrderList = inOrderRec() // returns an array of nodes
+  root = buildTree(inOrderList)
 }
-  
+
 
   return {
     buildTree,
@@ -426,38 +442,9 @@ return false
     heightRec,
     depthRec,
     isBalanced,
+    rebalance,
   };
 };
 
-const treeRoot = tree(testArr);
-// treeRoot.prettyPrint();
-treeRoot.insert(100);
-treeRoot.insert(200);
-treeRoot.insert(300);
-treeRoot.insert(400);
-treeRoot.insert(6);
-// treeRoot.prettyPrint();
-treeRoot.remove(100);
-treeRoot.prettyPrint();
-// console.log(treeRoot.find(200))
-console.log(treeRoot.findRec(400));
-
-function logNodeValue(nodeData) {
-  console.log(nodeData);
-}
-console.log(`Level order iterative: ${treeRoot.levelOrder()}`);
-console.log(`Level order recursion: ${treeRoot.levelOrderRec()}`);
-
-console.log(`In order recursion: ${treeRoot.inOrderRec()}`);
-console.log(`In order iterative: ${treeRoot.inOrderIt()}`);
-
-console.log(`Pre order recursion: ${treeRoot.preOrderRec()}`);
-console.log(`Pre order iterative: ${treeRoot.preOrderIt()}`);
-
-console.log(`Post order recursion: ${treeRoot.postOrderRec()}`);
-console.log(`Post order iterative: ${treeRoot.postOrderIt()}`);
-
-console.log(`Height: ${treeRoot.heightRec()}`);
-console.log(`Depth of 200: ${treeRoot.depthRec(200)}`);
-
-console.log(treeRoot.isBalanced())
+export {tree, node}
+export {helper, mergeSort, removeDuplicates}
